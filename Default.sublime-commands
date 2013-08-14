@@ -1,0 +1,6 @@
+[
+	{
+		"caption": "CleanCSS: Clean current file",
+		"command": "clean_css"
+	}
+]
