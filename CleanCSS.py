@@ -31,7 +31,6 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 		sublime.status_message('CleanCSS: Cleaning finished')
 
 
-
 	def formatRegion(self, region):
 		def regionToLines(region):
 			return map(lambda lineRegion: self.view.substr(lineRegion), self.view.lines(region))
