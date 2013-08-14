@@ -1,41 +1,10 @@
-CleanCSS is a [Sublime Text 2][sublime] package for beautifying your CSS. CleanCSS indents all your rules properly, alings all the values by the colon, and sorts each property into 5 categories within each rule: content, positional, dimensional, appearance, and animation.
-
-Takes this:
-	.card{
-	color           : white;
-	background-color: #3498DB;
-		text-align   : center;
-	display  : inline-block;
-		padding : 0;
-		width : 1.7em;
-	height: 1.7em;
-		line-height     : 1.7em;
-		margin-right  : 15px;
-		margin-bottom   : 15px;
-	}
-
-And turns it into this
-	.card{
-		display         : inline-block;
-
-		height          : 1.7em;
-		width           : 1.7em;
-		margin-right    : 15px;
-		margin-bottom   : 15px;
-		padding         : 0;
-
-		background-color: #3498DB;
-		color           : white;
-		line-height     : 1.7em;
-		text-align      : center;
-	}
-
+CleanCSS is a [Sublime Text 2](http://www.sublimetext.com/2) package for beautifying your CSS. CleanCSS indents all your rules properly, alings all the values by the colon, and sorts each property into 5 categories within each rule: content, positional, dimensional, appearance, and animation.
 
 ## Installation ##
 
 ### With Package Control ###
 
-**Recommended install**. If you have the [Package Control][package_control] package installed, you can install CleanCSS from inside Sublime Text itself. Open the Command Palette and select "Package Control: Install Package", then search for CleanCSS and you're done!
+**Recommended install**. If you have the [Package Control](https://sublime.wbond.net/) package installed, you can install CleanCSS from inside Sublime Text itself. Open the Command Palette and select "Package Control: Install Package", then search for CleanCSS and you're done!
 
 ### Without Package Control ###
 
