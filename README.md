@@ -1,4 +1,62 @@
-CleanCSS
-========
+CleanCSS is a [Sublime Text 2][sublime] package for beautifying your CSS. CleanCSS indents all your rules properly, alings all the values by the colon, and sorts each property into 5 categories within each rule: content, positional, dimensional, appearance, and animation.
 
-CSS beautifier and sorter for Sublime text 2
+Takes this:
+	.card{
+	color           : white;
+	background-color: #3498DB;
+		text-align   : center;
+	display  : inline-block;
+		padding : 0;
+		width : 1.7em;
+	height: 1.7em;
+		line-height     : 1.7em;
+		margin-right  : 15px;
+		margin-bottom   : 15px;
+	}
+
+And turns it into this
+	.card{
+		display         : inline-block;
+
+		height          : 1.7em;
+		width           : 1.7em;
+		margin-right    : 15px;
+		margin-bottom   : 15px;
+		padding         : 0;
+
+		background-color: #3498DB;
+		color           : white;
+		line-height     : 1.7em;
+		text-align      : center;
+	}
+
+
+## Installation ##
+
+### With Package Control ###
+
+**Recommended install**. If you have the [Package Control][package_control] package installed, you can install CleanCSS from inside Sublime Text itself. Open the Command Palette and select "Package Control: Install Package", then search for CleanCSS and you're done!
+
+### Without Package Control ###
+
+Go to your Sublime Text 2 Packages directory and clone the repository using the command below:
+
+    git clone https://github.com/stolksdorf/CleanCSS.git
+
+## Usage ##
+
+You can clean a css file by accessing the CleanCSS command from the command palette
+
+![](http://i.imgur.com/Ka6lDLR.gif)
+
+or you can bind a key to the `clean_css` command in `Preferences -> Key Bindings - User` for ultra fast cleaning
+
+	{"keys":["f6"], "command" : "clean_css"},
+
+## Configuration ##
+
+You can access the configuration settings by selecting `Preferences -> Package Settings -> CleanCSS`.
+
+- `add_space_between_categories` *(Boolean)* If true, then an empty line will be inserted between categories
+
+- `categories` *(Array)* Contains how CleanCSS should sort and group each CSS property.

@@ -82,13 +82,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 
 	def createPartitionedRules(self, lines):
-		ruleLists = [
-			settings.get('content_rules',[]),
-			settings.get('positional_rules',[]),
-			settings.get('dimensional_rules',[]),
-			settings.get('appearance_rules',[]),
-			settings.get('animation_rules',[])
-		]
+		ruleLists = settings.get('categories', [[]])
 
 		def getLeftOvers(rules, allLines):
 			for ruleList in rules:
@@ -121,6 +115,6 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 		result = [filterAndSortRules(lines,rl) for rl in ruleLists]
 		result += getLeftOvers(result, lines)
 
-		if(settings.get('add_space_between_sections')):
+		if(settings.get('add_space_between_categories')):
 			return joinArrays(result, '')
 		return flatten(result)
