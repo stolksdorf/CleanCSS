@@ -28,6 +28,8 @@ def getFarthestColonPos(lines):
 	return max(map(getRuleNameLength, lines))
 
 
+
+
 class CleanCssCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.edit = edit
@@ -44,6 +46,11 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 		#print "Finished"
 		sublime.status_message('CleanCSS: Cleaning finished')
+
+	def indentLine(self, line, indentation):
+		if self.settings.get('translate_tabs_to_spaces'):
+			return indentation + " " * int(self.settings.get('tab_size', 4)) + line.lstrip()
+		return indentation + '\t' + line.lstrip()
 
 
 	def formatRegion(self, region):
@@ -65,20 +72,47 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 		##Handles mutli-line rules
 		if lines:
-			result = self.cleanLines(lines, ruleIndentation)
-			result = self.createPartitionedRules(result)
+			results = self.extractComments(lines, ruleIndentation)
+			result = self.cleanLines(results[0], ruleIndentation)
+			result = self.createPartitionedRules(result, results[1])
 			result.append(ruleIndentation + '}')
 
 		result = [firstLine] + result
 		self.view.replace(self.edit, region, '\n'.join(result))
 
+	def extractComments(self, lines, indentation):
+		comments = [self.indentLine('/*', indentation)]
+		result = []
+		inComments = False
+		for line in lines:
+			#find an open comment and no close on the same line
+			if(line.find('/*')>0 and line.find('*/') < 0 and not inComments):
+				parts = line.split('/*')
+				if parts[0].strip():
+					result.append(parts[0])
+				if parts[1].strip():
+					comments.append(self.indentLine(parts[1], indentation))
+				inComments = True
+				continue
+			#find an close comment and no open on the same line
+			if(line.find('/*')<0 and line.find('*/') > 0 and inComments):
+				parts = line.split('*/')
+				if parts[0].strip():
+					comments.append(parts[0])
+				if parts[1].strip():
+					result.append(self.indentLine(parts[1], indentation))
+				inComments = False
+				continue
+			if(not inComments):
+				result.append(line)
+			if(inComments):
+				comments.append(line)
+		comments.append(self.indentLine('*/', indentation))
+		return [result, comments]
+
 	#Takes an array of lines and indents, removes braces, and spaces out the colons
 	def cleanLines(self, lines, indentation):
 		#Uses the users settings to properly indent the line
-		def indentLine(line):
-			if self.settings.get('translate_tabs_to_spaces'):
-				return " " * int(self.settings.get('tab_size', 4)) + line.lstrip()
-			return '\t' + line.lstrip()
 
 		result = []
 		for line in lines:
@@ -87,7 +121,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 			#remove empty lines
 			if not line.strip():
 				continue
-			line = indentation + indentLine(line)
+			line = self.indentLine(line, indentation)
 			result.append(line)
 
 		if not result:
@@ -97,7 +131,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 		return map(lambda line:colonPad(line, colonIndex), result)
 
 
-	def createPartitionedRules(self, lines):
+	def createPartitionedRules(self, lines, comments):
 		ruleLists = settings.get('categories', [[]])
 
 		def getLeftOvers(rules, allLines):
@@ -130,6 +164,8 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 		result = [filterAndSortRules(lines,rl) for rl in ruleLists]
 		result += getLeftOvers(result, lines)
+		if len(comments) > 2:
+			result.append(comments)
 
 		rule_count = sum([len(x) for x in result])
 

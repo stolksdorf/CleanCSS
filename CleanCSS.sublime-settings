@@ -5,6 +5,10 @@
 	// 0 to disable
 	"num_rules_to_collaspe" : 3,
 
+
+
+	//Your css rules will be order by category in the order they appear here, and ordered within
+	// each category as they are here as well
 	"categories" : [
 		//Content Rules
 		[
