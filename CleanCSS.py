@@ -5,13 +5,27 @@ settings = sublime.load_settings("CleanCSS.sublime-settings")
 
 def colonPad(s, desired_index):
 	current_index = s.find(":")
-	if 0 > current_index or current_index >= desired_index:
+	if 0 > current_index:
 		return s
 	parts = s.split(":",1)
-	return "".join([parts[0]," " * (desired_index - current_index),":",parts[1]])
+	ruleName = parts[0].strip()
+	colonDist = desired_index - len(ruleName) + 1
+
+	return "".join([
+		parts[0].rstrip(),
+		" " * colonDist,
+		": ",parts[1].lstrip()
+	])
 
 def getFarthestColonPos(lines):
-	return max(map(lambda line: line.find(':'), lines))
+	def getRuleNameLength(line):
+		index = line.find(":")
+		if 0 > index:
+			return len(line)
+		parts = line.split(":",1)
+		return len(parts[0].strip())
+
+	return max(map(getRuleNameLength, lines))
 
 
 class CleanCssCommand(sublime_plugin.TextCommand):
@@ -28,6 +42,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 			self.formatRegion(cssRule)
 			searchPoint = self.view.find('\{([^}]*)\}', searchPoint).end()
 
+		#print "Finished"
 		sublime.status_message('CleanCSS: Cleaning finished')
 
 
@@ -57,6 +72,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 		result = [firstLine] + result
 		self.view.replace(self.edit, region, '\n'.join(result))
 
+	#Takes an array of lines and indents, removes braces, and spaces out the colons
 	def cleanLines(self, lines, indentation):
 		#Uses the users settings to properly indent the line
 		def indentLine(line):
@@ -66,6 +82,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 		result = []
 		for line in lines:
+			#Remove any same line ending braces
 			line = line.replace('}', '')
 			#remove empty lines
 			if not line.strip():

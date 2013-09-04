@@ -1,6 +1,8 @@
 {
 	"add_space_between_categories" : true,
 
+	"num_rules_to_collaspe" : 3,
+
 	"categories" : [
 		//Content Rules
 		[
