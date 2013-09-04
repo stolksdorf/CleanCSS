@@ -1,6 +1,8 @@
 {
 	"add_space_between_categories" : true,
 
+	//The most rules to not add spaces between categories
+	// 0 to disable
 	"num_rules_to_collaspe" : 3,
 
 	"categories" : [

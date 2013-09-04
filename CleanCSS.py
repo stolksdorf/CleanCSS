@@ -131,6 +131,10 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 		result = [filterAndSortRules(lines,rl) for rl in ruleLists]
 		result += getLeftOvers(result, lines)
 
-		if(settings.get('add_space_between_categories')):
+		rule_count = sum([len(x) for x in result])
+
+		# add spaces between cateogires
+		if(settings.get('add_space_between_categories') and
+			settings.get('num_rules_to_collaspe') < rule_count):
 			return joinArrays(result, '')
 		return flatten(result)
