@@ -25,7 +25,7 @@ def getFarthestColonPos(lines):
 		parts = line.split(":",1)
 		return len(parts[0].strip())
 
-	return max(map(getRuleNameLength, lines))
+	return max(list(map(getRuleNameLength, lines)))
 
 
 
@@ -55,7 +55,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 	def formatRegion(self, region):
 		def regionToLines(region):
-			return map(lambda lineRegion: self.view.substr(lineRegion), self.view.lines(region))
+			return list(map(lambda lineRegion: self.view.substr(lineRegion), self.view.lines(region)))
 		result = []
 		region = self.view.line(region)
 		lines  = regionToLines(region)
@@ -128,7 +128,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 			return result
 
 		colonIndex = getFarthestColonPos(result)
-		return map(lambda line:colonPad(line, colonIndex), result)
+		return list(map(lambda line:colonPad(line, colonIndex), result))
 
 
 	def createPartitionedRules(self, lines, comments):
@@ -136,7 +136,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 		def getLeftOvers(rules, allLines):
 			for ruleList in rules:
-				allLines = filter(lambda line:line not in set(ruleList), allLines)
+				allLines = list(filter(lambda line:line not in set(ruleList), allLines))
 			return [allLines]
 
 		def filterAndSortRules(lines, ruleList):
@@ -147,7 +147,7 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 						result.append((ruleIndex, line))
 						break
 			result = sorted(result, key=lambda line: line[0])
-			return map(lambda line:line[1], result)
+			return list(map(lambda line:line[1], result))
 
 		def telescoping_append(ls, val):
 			ls.append(val)
