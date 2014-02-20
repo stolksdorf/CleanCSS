@@ -9,7 +9,10 @@ def colonPad(s, desired_index):
 		return s
 	parts = s.split(":",1)
 	ruleName = parts[0].strip()
-	colonDist = desired_index - len(ruleName) + 1
+	if(settings.get('vertically_align_selector_property_values')):
+		colonDist = desired_index - len(ruleName) + 1
+	else:
+		colonDist = 0
 
 	return "".join([
 		parts[0].rstrip(),
