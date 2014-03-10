@@ -3,7 +3,7 @@
 
 	//The most rules to not add spaces between categories
 	// 0 to disable
-	"num_rules_to_collaspe" : 3,
+	"num_rules_to_collapse" : 3,
 
 	//Vertically align selector property values
 	"vertically_align_selector_property_values" : 1,

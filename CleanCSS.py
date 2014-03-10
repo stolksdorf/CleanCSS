@@ -174,6 +174,6 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 
 		# add spaces between cateogires
 		if(settings.get('add_space_between_categories') and
-			settings.get('num_rules_to_collaspe') < rule_count):
+			settings.get('num_rules_to_collapse') < rule_count):
 			return joinArrays(result, '')
 		return flatten(result)
