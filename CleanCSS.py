@@ -3,29 +3,198 @@ import sublime_plugin
 
 settings = sublime.load_settings("CleanCSS.sublime-settings")
 
-def colonPad(s, desired_index):
-	current_index = s.find(":")
-	if 0 > current_index:
-		return s
-	parts = s.split(":",1)
-	ruleName = parts[0].strip()
-	colonDist = desired_index - len(ruleName) + 1
 
-	return "".join([
-		parts[0].rstrip(),
-		" " * colonDist,
-		": ",parts[1].lstrip()
-	])
 
-def getFarthestColonPos(lines):
-	def getRuleNameLength(line):
-		index = line.find(":")
-		if 0 > index:
-			return len(line)
-		parts = line.split(":",1)
-		return len(parts[0].strip())
+def indentChar():
+	#if self.settings.get('translate_tabs_to_spaces'):
+	#	return " " * int(self.settings.get('tab_size', 4))
+	return '\t'
 
-	return max(map(getRuleNameLength, lines))
+def flatten(list, join=-1):
+	result = list
+	if(join != -1):
+		result = []
+		for item in list:
+			result.append(item)
+			result.append([join])
+		if(len(result)):
+			result.pop()
+	return [item for sublist in result for item in sublist]
+
+
+class CssStyle():
+	def __init__(self, line, comments):
+		self.line = line
+		self.comments = comments
+		self.category = ''
+		self.sortOrder = 0
+
+		cp = self.line.rfind(':')
+		if(cp == -1):
+			self.attr = self.line
+			self.val = ''
+		else:
+			self.attr = self.line[:cp].rstrip()
+			self.val  = self.line[cp+1:].lstrip()
+
+		self.setStyleType()
+
+	def getColonPosition(self):
+		pos = self.line.rfind(':');
+		if(pos == -1):
+			return -1
+		return len(self.line[:pos].rstrip())
+
+	def verticalAlign(self, colonPos):
+		if(not self.val):
+			return
+		pad  = colonPos - len(self.attr)
+		self.line = self.attr + (pad * ' ') + ' : ' + self.val
+
+
+	def setStyleType(self):
+		categories = settings.get('categories', {})
+		for category in categories:
+			for index, attrName in enumerate(category["attributes"]):
+				if(attrName == self.attr):
+					self.category = category["name"]
+					self.sortOrder = index
+
+		if(not self.category):
+			if(self.attr.startswith('.')):
+				self.category = 'mixin'
+			elif(self.attr.startswith('@import')):
+				self.category = 'import'
+			elif(self.attr.startswith('@')):
+				self.category = 'variable'
+			else:
+				self.category = 'other'
+
+	def output(self, indentCount):
+		return self.comments + [(indentChar() * indentCount) + self.line]
+
+
+class CssRule():
+	def __init__(self, firstline, lines, comments, indentCount):
+		self.leadingComments = comments
+		self.tailingComments = []
+		self.indentCount = indentCount
+		self.rules = []
+		self.styles = []
+		self.firstline = firstline.strip()
+		self.processLines(lines)
+
+	def verticalAlignStyles(self) :
+		farthestPos = -1
+		for style in self.styles:
+			cp = style.getColonPosition()
+			if(cp > farthestPos):
+				farthestPos = cp
+
+		for style in self.styles:
+			style.verticalAlign(farthestPos)
+
+		return
+
+
+
+	def extractRule(self, firstline, lines, comments):
+		ruleCode = []
+		braceCount = 1
+		if(firstline.find('}') == -1):
+			while len(lines) > 0:
+				line = lines[0]
+				if '{' in line:
+					braceCount += 1
+				if '}' in line:
+					braceCount -= 1
+				ruleCode.append(line)
+				lines.pop(0)
+				if braceCount == 0:
+					break
+
+		self.rules.append(CssRule(firstline, ruleCode, comments, self.indentCount + 1))
+		return lines
+
+	def processLines(self, lines):
+		commentSlush = []
+		inComment = False
+
+		#loop through each line, determine if its a style, rule, or comment
+		while len(lines) > 0:
+			line = lines.pop(0)
+
+			#comments
+			if(inComment and line.find('*/') > -1):
+				commentSlush.append(line)
+				inComment = False
+			elif(inComment):
+				commentSlush.append(line)
+			elif(line.strip().startswith('//') or (line.find('/*') > -1 and line.find('*/') > -1)): #single line comments
+				commentSlush.append(line)
+			elif( line.find('/*') > -1):
+				commentSlush.append(line)
+				inComment = True
+
+
+			#Blank lines
+			elif(not line or line.strip() == '}'):
+				continue
+			elif('{' in line):
+				lines = self.extractRule(line, lines, commentSlush)
+				commentSlush = []
+			else:
+				self.styles.append(CssStyle(line.strip(), commentSlush))
+				commentSlush = []
+
+		self.tailingComments = commentSlush
+
+		return
+
+
+	def output(self):
+		result = []
+		if(settings.get("vertically_align_selector_property_values")):
+			self.verticalAlignStyles()
+
+		spaceStyles = settings.get('add_space_between_categories')
+		minStyles   = settings.get('min_styles_to_collaspe')
+
+		#Output Styles
+		if(len(self.styles)):
+			formattedStyles = []
+			categories = settings.get('categories', {})
+			for category in categories:
+				filtered = [style for style in self.styles if style.category == category["name"]]
+				sort = sorted(filtered, key=lambda style:style.sortOrder)
+				if(len(sort)):
+					formattedStyles.append(flatten([style.output(self.indentCount + 1) for style in sort]))
+			if(spaceStyles and minStyles <= len(self.styles)):
+				result.append(flatten(formattedStyles, ''))
+			else:
+				result.append(flatten(formattedStyles))
+
+
+		#Output Rules
+		if(len(self.rules)):
+			if(spaceStyles and minStyles <= len(self.rules)):
+				result.append(flatten([rule.output() for rule in self.rules], ''))
+			else:
+				result.append(flatten([rule.output() for rule in self.rules]))
+
+		if(spaceStyles and minStyles <= len(self.styles) + len(self.rules)):
+			result = flatten(result,'')
+		else:
+			result = flatten(result)
+
+		#Output comments and firstline
+		result = self.leadingComments + [self.indentCount * indentChar() + self.firstline] + result + self.tailingComments
+
+		#Output closing brace
+		if(self.firstline.find('}') == -1):
+			result.append(self.indentCount * indentChar() + '}')
+		return result
+
 
 
 
@@ -35,142 +204,11 @@ class CleanCssCommand(sublime_plugin.TextCommand):
 		self.edit = edit
 		self.settings = self.view.settings()
 
-		#Iterate over each css rule in the file
-		searchPoint = 0
-		while True:
-			cssRule = self.view.find('\{([^}]*)\}', searchPoint)
-			if not cssRule:
-				break
-			self.formatRegion(cssRule)
-			searchPoint = self.view.find('\{([^}]*)\}', searchPoint).end()
+		#Get all liens in file
+		region = sublime.Region(0, self.view.size())
+		lines  = list(map(lambda lineRegion: self.view.substr(lineRegion), self.view.lines(region)))
 
-		#print "Finished"
-		sublime.status_message('CleanCSS: Cleaning finished')
-
-	def indentLine(self, line, indentation):
-		if self.settings.get('translate_tabs_to_spaces'):
-			return indentation + " " * int(self.settings.get('tab_size', 4)) + line.lstrip()
-		return indentation + '\t' + line.lstrip()
-
-
-	def formatRegion(self, region):
-		def regionToLines(region):
-			return map(lambda lineRegion: self.view.substr(lineRegion), self.view.lines(region))
-		result = []
-		region = self.view.line(region)
-		lines  = regionToLines(region)
-
-		##grab the first line
-		firstLine = lines.pop(0)
-
-		#Jetpack out of there if there's a media rule
-		if(firstLine.lstrip().startswith('@')):
-			return
-
-		#Get how the rule is currently indented
-		ruleIndentation = firstLine.replace(firstLine.lstrip(), '')
-
-		##Handles mutli-line rules
-		if lines:
-			results = self.extractComments(lines, ruleIndentation)
-			result = self.cleanLines(results[0], ruleIndentation)
-			result = self.createPartitionedRules(result, results[1])
-			result.append(ruleIndentation + '}')
-
-		result = [firstLine] + result
+		result = CssRule('', lines, [], -1).output()
+		result.pop()
 		self.view.replace(self.edit, region, '\n'.join(result))
-
-	def extractComments(self, lines, indentation):
-		comments = [self.indentLine('/*', indentation)]
-		result = []
-		inComments = False
-		for line in lines:
-			#find an open comment and no close on the same line
-			if(line.find('/*')>0 and line.find('*/') < 0 and not inComments):
-				parts = line.split('/*')
-				if parts[0].strip():
-					result.append(parts[0])
-				if parts[1].strip():
-					comments.append(self.indentLine(parts[1], indentation))
-				inComments = True
-				continue
-			#find an close comment and no open on the same line
-			if(line.find('/*')<0 and line.find('*/') > 0 and inComments):
-				parts = line.split('*/')
-				if parts[0].strip():
-					comments.append(parts[0])
-				if parts[1].strip():
-					result.append(self.indentLine(parts[1], indentation))
-				inComments = False
-				continue
-			if(not inComments):
-				result.append(line)
-			if(inComments):
-				comments.append(line)
-		comments.append(self.indentLine('*/', indentation))
-		return [result, comments]
-
-	#Takes an array of lines and indents, removes braces, and spaces out the colons
-	def cleanLines(self, lines, indentation):
-		#Uses the users settings to properly indent the line
-
-		result = []
-		for line in lines:
-			#Remove any same line ending braces
-			line = line.replace('}', '')
-			#remove empty lines
-			if not line.strip():
-				continue
-			line = self.indentLine(line, indentation)
-			result.append(line)
-
-		if not result:
-			return result
-
-		colonIndex = getFarthestColonPos(result)
-		return map(lambda line:colonPad(line, colonIndex), result)
-
-
-	def createPartitionedRules(self, lines, comments):
-		ruleLists = settings.get('categories', [[]])
-
-		def getLeftOvers(rules, allLines):
-			for ruleList in rules:
-				allLines = filter(lambda line:line not in set(ruleList), allLines)
-			return [allLines]
-
-		def filterAndSortRules(lines, ruleList):
-			result = []
-			for line in lines:
-				for ruleIndex, rule in enumerate(ruleList):
-					if line[0:line.find(':')].strip() == rule:
-						result.append((ruleIndex, line))
-						break
-			result = sorted(result, key=lambda line: line[0])
-			return map(lambda line:line[1], result)
-
-		def telescoping_append(ls, val):
-			ls.append(val)
-			return ls
-
-		def flatten(list):
-			return [item for sublist in list for item in sublist]
-
-		def joinArrays(listOfArrs, seperator):
-			result = flatten([telescoping_append(temp,seperator) for temp in listOfArrs if temp])
-			if(result):
-				result.pop()
-			return result
-
-		result = [filterAndSortRules(lines,rl) for rl in ruleLists]
-		result += getLeftOvers(result, lines)
-		if len(comments) > 2:
-			result.append(comments)
-
-		rule_count = sum([len(x) for x in result])
-
-		# add spaces between cateogires
-		if(settings.get('add_space_between_categories') and
-			settings.get('num_rules_to_collaspe') < rule_count):
-			return joinArrays(result, '')
-		return flatten(result)
+		return

@@ -29,7 +29,3 @@ You can access the configuration settings by selecting `Preferences -> Package S
 - `add_space_between_categories` *(Boolean)* If true, then an empty line will be inserted between categories
 
 - `categories` *(Array)* Contains how CleanCSS should sort and group each CSS property.
-
-## Notes ##
-**Media queries don't work yet**. I've had some trouble getting them to format properly. I'll be fixing this soon.
-
