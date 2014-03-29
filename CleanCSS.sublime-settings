@@ -4,16 +4,12 @@
 
 	//The most rules to not add spaces between categories
 	// 0 to disable
-<<<<<<< HEAD
 	"min_rules_to_collaspe" : 3,
 	"min_styles_to_collaspe" : 3,
 
 	//Vertically align selector property values
 	"vertically_align_selector_property_values" : true,
-
-=======
 	"num_rules_to_collapse" : 3,
->>>>>>> 683838c1302026af3716bed45134c0cc3a485912
 
 	//Vertically align selector property values
 	"vertically_align_selector_property_values" : 1,
