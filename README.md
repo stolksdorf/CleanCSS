@@ -6,12 +6,6 @@ CleanCSS is a [Sublime Text 3](http://www.sublimetext.com/3) package for beautif
 
 **Recommended install**. If you have the [Package Control](https://sublime.wbond.net/) package installed, you can install CleanCSS from inside Sublime Text itself. Open the Command Palette and select "Package Control: Install Package", then search for CleanCSS and you're done!
 
-### Without Package Control ###
-
-Go to your Sublime Text 2 Packages directory and clone the repository using the command below:
-
-    git clone https://github.com/stolksdorf/CleanCSS.git
-
 ## Usage ##
 
 You can clean a css file by accessing the CleanCSS command from the command palette
