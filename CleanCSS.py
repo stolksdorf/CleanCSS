@@ -1,7 +1,7 @@
 import sublime
 import sublime_plugin
 
-settings = sublime.load_settings("CleanCSS.sublime-settings")
+SETTINGS_FILE = "CleanCSS.sublime-settings"
 
 
 def indentChar():
@@ -199,7 +199,7 @@ class CssRule():
 class CleanCssCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.edit = edit
-		self.settings = self.view.settings()
+		self.settings = sublime.load_settings(SETTINGS_FILE)
 
 		#Get all lines in file
 		region = sublime.Region(0, self.view.size())
