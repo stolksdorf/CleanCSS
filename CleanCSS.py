@@ -2,10 +2,9 @@ import sublime
 import sublime_plugin
 
 SETTINGS_FILE = "CleanCSS.sublime-settings"
-
+settings = {}
 
 def indentChar():
-	# TODO : later
 	#if self.settings.get('translate_tabs_to_spaces'):
 	#	return " " * int(self.settings.get('tab_size', 4))
 	return '\t'
@@ -199,7 +198,8 @@ class CssRule():
 class CleanCssCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		self.edit = edit
-		self.settings = sublime.load_settings(SETTINGS_FILE)
+		global settings
+		settings = sublime.load_settings(SETTINGS_FILE)
 
 		#Get all lines in file
 		region = sublime.Region(0, self.view.size())

@@ -1,4 +1,4 @@
-CleanCSS is a [Sublime Text 2](http://www.sublimetext.com/2) package for beautifying your CSS. CleanCSS indents all your rules properly, aligns all the values by the colon, and sorts each property into 5 categories within each rule: content, positional, dimensional, appearance, and animation.
+CleanCSS is a [Sublime Text 3](http://www.sublimetext.com/3) package for beautifying your CSS. CleanCSS indents all your rules properly, aligns all the values by the colon, and sorts each property into 5 categories within each rule: content, positional, dimensional, appearance, and animation.
 
 ## Installation ##
 
