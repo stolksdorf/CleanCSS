@@ -5,9 +5,7 @@ SETTINGS_FILE = "CleanCSS.sublime-settings"
 settings = {}
 
 def indentChar():
-	#if self.settings.get('translate_tabs_to_spaces'):
-	#	return " " * int(self.settings.get('tab_size', 4))
-	return '\t'
+	return settings.get('indent_string', '\t')
 
 def flatten(list, join=-1):
 	result = list

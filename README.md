@@ -29,6 +29,7 @@ You can access the configuration settings by selecting `Preferences -> Package S
 
 - `add_space_between_categories` *(Boolean)* If true, then an empty line will be inserted between categories
 - `add_space_between_rules` *(Boolean)* Adds spaces inbetween each css rule.
-- `min_styles_to_collaspe` *(Number)* If the rule has equal to or less styles, it won't add the category spacing.
+- `indent_string` *(String)* The string of characters used to indent. Defaults to a tab.
+- `min_styles_to_collaspe` *(Number)* If the rule has equal to or less styles, it won't add the category spacing. Defaults to 3.
 - `vertically_align_selector_property_values` *(Boolean)* If true, will align the colons of each style within each rule
 - `categories` *(Array)* Contains how CleanCSS should sort and group each CSS property. Feel free to customize this as you like. Ordering of the properities in here will dictate how the properties are ordered when you clean the file.

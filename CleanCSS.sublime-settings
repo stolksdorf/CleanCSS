@@ -2,6 +2,8 @@
 	"add_space_between_categories" : true,
 	"add_space_between_rules" : true,
 
+	"indent_string" : "\t",
+
 	//The most rules to not add spaces between categories
 	// 0 to disable
 	"min_styles_to_collaspe" : 3,
